@@ -9,12 +9,7 @@ const INITIAL_CHAT_MESSAGES = [
   {
     id: 'assistant-intro',
     role: 'assistant',
-    text: 'Welcome! Ask what you would like to learn - algebra, calculus, geometry, or anything else. I will walk you through the steps, highlight the reasoning, and generate visual models on the graph whenever they help (and whenever you request them).',
-  },
-  {
-    id: 'assistant-example',
-    role: 'assistant',
-    text: 'Example - Solve x^2 - 5x + 6 = 0:\n1. Factor to (x - 2)(x - 3) = 0.\n2. Set each factor equal to zero to get x = 2 and x = 3.\n3. Plot the parabola and mark the roots to confirm the solution.\nTry asking, "Teach me how to graph a sine wave step by step."',
+    text: 'I am Mobius—your math copilot. Ask a question and I will explain the steps, show the reasoning, and plot helpful visuals on demand.',
   },
 ];
 
@@ -106,20 +101,12 @@ const resizeHandleStyle = {
   position: 'absolute',
   top: 0,
   right: 0,
-  width: '0.75rem',
+  width: '1rem',
   height: '100%',
   cursor: 'ew-resize',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1,
-};
-
-const resizeGripStyle = {
-  width: '1.5px',
-  height: '38%',
-  borderRadius: '1px',
-  background: 'rgba(255, 255, 255, 0.35)',
+  zIndex: 2,
+  opacity: 0,
+  touchAction: 'none',
 };
 
 const mobiusLabelStyle = {
@@ -144,10 +131,13 @@ export default function PromptOverlay({
   onPromptChange,
   onSubmit,
   error,
+  isSubmitting = false,
+  latestResponse,
 }) {
   const [panelWidth, setPanelWidth] = useState(DEFAULT_PANEL_WIDTH);
   const [chatMessages, setChatMessages] = useState(INITIAL_CHAT_MESSAGES);
   const chatEndRef = useRef(null);
+  const chatHistoryRef = useRef(null);
   const startPointerXRef = useRef(0);
   const startWidthRef = useRef(DEFAULT_PANEL_WIDTH);
   const isResizingRef = useRef(false);
@@ -155,7 +145,46 @@ export default function PromptOverlay({
   const pointerUpHandlerRef = useRef(null);
   const [isSendHovered, setIsSendHovered] = useState(false);
 
+  const escapeHtml = (value = '') =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+const formatMessageHtml = (value = '') =>
+  escapeHtml(value).replace(/\n/g, '<br />');
+
+const typesetMath = (element) => {
+  if (typeof window === 'undefined' || !element) {
+    return;
+  }
+
+  const { MathJax } = window;
+  if (!MathJax) {
+    return;
+  }
+
+  const startupPromise = MathJax.startup?.promise || Promise.resolve();
+  startupPromise
+    .then(() => {
+      if (MathJax.typesetPromise) {
+        return MathJax.typesetPromise([element]);
+      }
+      if (MathJax.typeset) {
+        MathJax.typeset([element]);
+      }
+      return null;
+    })
+    .catch(() => {});
+};
+
   const submitPrompt = useCallback(() => {
+    if (isSubmitting) {
+      return;
+    }
+
     const trimmed = promptValue.trim();
 
     if (trimmed) {
@@ -169,8 +198,9 @@ export default function PromptOverlay({
       ]);
     }
 
-    onSubmit?.(promptValue);
-  }, [onSubmit, promptValue]);
+    void onSubmit?.(promptValue);
+    onPromptChange?.('');
+  }, [isSubmitting, onPromptChange, onSubmit, promptValue]);
 
   const handleFormSubmit = useCallback(
     (event) => {
@@ -228,11 +258,36 @@ export default function PromptOverlay({
   }, []);
 
   useEffect(() => {
+    if (!latestResponse || !latestResponse.text) {
+      return;
+    }
+
+    setChatMessages((previous) => {
+      if (
+        latestResponse.id
+        && previous.some((message) => message.id === latestResponse.id)
+      ) {
+        return previous;
+      }
+
+      return [
+        ...previous,
+        {
+          id: latestResponse.id || `assistant-${Date.now()}`,
+          role: 'assistant',
+          text: latestResponse.text,
+        },
+      ];
+    });
+  }, [latestResponse]);
+
+  useEffect(() => {
     if (!isOpen) {
       return;
     }
 
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    typesetMath(chatHistoryRef.current);
   }, [chatMessages, isOpen]);
 
   const handleResizeStart = useCallback(
@@ -287,7 +342,14 @@ export default function PromptOverlay({
 
   const sendButtonDynamicStyle = {
     ...sendButtonStyle,
-    ...(isSendHovered
+    ...(isSubmitting
+      ? {
+          opacity: 0.6,
+          cursor: 'wait',
+          transform: 'none',
+        }
+      : null),
+    ...(isSendHovered && !isSubmitting
       ? {
           border: '0.75px solid rgba(232, 236, 245, 0.75)',
           background: 'rgba(231, 236, 245, 0.32)',
@@ -327,11 +389,13 @@ export default function PromptOverlay({
             onPointerDown={handleResizeStart}
             role="presentation"
             aria-hidden="true"
-          >
-            <div style={resizeGripStyle} />
-          </div>
+          />
 
-          <div className="chat-history" style={chatHistoryStyle}>
+          <div
+            className="chat-history"
+            style={chatHistoryStyle}
+            ref={chatHistoryRef}
+          >
             {chatMessages.map((message) => (
               <div
                 key={message.id}
@@ -344,9 +408,10 @@ export default function PromptOverlay({
                   style={
                     message.role === 'user' ? userBubbleStyle : assistantMessageStyle
                   }
-                >
-                  {message.text}
-                </div>
+                  dangerouslySetInnerHTML={{
+                    __html: formatMessageHtml(message.text),
+                  }}
+                />
               </div>
             ))}
             <div ref={chatEndRef} />
@@ -366,6 +431,7 @@ export default function PromptOverlay({
                 rows={4}
                 style={textareaStyle}
                 aria-label="Learning prompt"
+                disabled={isSubmitting}
               />
               <button
                 type="submit"
@@ -373,8 +439,9 @@ export default function PromptOverlay({
                 style={sendButtonDynamicStyle}
                 onMouseEnter={() => setIsSendHovered(true)}
                 onMouseLeave={() => setIsSendHovered(false)}
+                disabled={isSubmitting}
               >
-                ↑
+                {isSubmitting ? '…' : '↑'}
               </button>
             </div>
             {error && (

@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -11,9 +12,28 @@ from .agent import (
     plot_planar_function,
     agent,
     session,
+    consume_tool_events,
 )
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Mobius Backend API", version="0.1.0")
+
+allowed_origins_env = os.getenv("BACKEND_ALLOWED_ORIGINS")
+if allowed_origins_env:
+    allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+else:
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class ExplicitFunctionRequest(BaseModel):
@@ -83,13 +103,24 @@ async def plot_planar_surface(payload: PlanarFunctionRequest):
 async def receive_user_input(payload: UserInputRequest):
     global latest_llm_text
 
-    result = Runner.run_sync(agent, input=payload.message, session=session)
+    try:
+        result = await Runner.run(
+            agent,
+            input=payload.message,
+            session=session,
+        )
+    except Exception as exc:  # pragma: no cover - best effort logging
+        consume_tool_events()
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    if not hasattr(result, "final_output"):
+    final_output = getattr(result, "final_output", None)
+    if not final_output:
+        consume_tool_events()
         raise HTTPException(status_code=500, detail="Agent returned no output.")
 
-    latest_llm_text = result.final_output
-    return {"response": result.final_output}
+    latest_llm_text = final_output
+    tool_events = consume_tool_events()
+    return {"response": final_output, "tool_calls": tool_events}
 
 
 @app.get("/conversation/llm-text")

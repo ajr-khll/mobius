@@ -251,6 +251,292 @@ body,
   transform: rotate(45deg);
 }
 
+.clear-plot-button {
+  position: fixed;
+  left: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 4vw, 2.75rem);
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 236, 245, 0.45);
+  background: rgba(15, 20, 35, 0.85);
+  color: rgba(232, 236, 245, 0.9);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  z-index: 16;
+}
+
+.clear-plot-button:hover,
+.clear-plot-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(232, 236, 245, 0.75);
+  background: rgba(26, 34, 58, 0.9);
+  outline: none;
+}
+
+.axis-controls {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.axis-controls > * {
+  pointer-events: auto;
+}
+
+.axis-controls-toggle {
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 236, 245, 0.45);
+  background: linear-gradient(135deg, rgba(12, 16, 28, 0.9), rgba(24, 30, 46, 0.8));
+  color: rgba(232, 236, 245, 0.95);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, opacity 160ms ease;
+  box-shadow: 0 0.8rem 2rem rgba(2, 3, 9, 0.55);
+}
+
+.axis-controls-toggle:hover,
+.axis-controls-toggle:focus-visible,
+.axis-controls-toggle.is-open {
+  transform: translateY(-1px);
+  border-color: rgba(232, 236, 245, 0.75);
+  background: linear-gradient(135deg, rgba(20, 26, 38, 0.92), rgba(30, 38, 52, 0.88));
+  outline: none;
+}
+
+.axis-controls-panel {
+  position: absolute;
+  bottom: calc(100% + 1rem);
+  left: 0;
+  width: min(20rem, 60vw);
+  padding: 1.1rem 1.25rem;
+  border-radius: 1rem;
+  background: rgba(8, 12, 20, 0.92);
+  border: 1px solid rgba(232, 236, 245, 0.3);
+  box-shadow: 0 1.4rem 3rem rgba(2, 3, 9, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 16;
+}
+
+.axis-controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.axis-controls-header h2 {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(232, 236, 245, 0.92);
+}
+
+.axis-controls-close {
+  border: none;
+  background: transparent;
+  color: rgba(232, 236, 245, 0.65);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 160ms ease, transform 160ms ease;
+  padding: 0.2rem;
+  border-radius: 0.5rem;
+}
+
+.axis-controls-close:hover,
+.axis-controls-close:focus-visible {
+  color: rgba(232, 236, 245, 0.95);
+  transform: scale(1.1);
+  outline: none;
+  background: rgba(232, 236, 245, 0.12);
+}
+
+.axis-controls-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.axis-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(232, 236, 245, 0.15);
+}
+
+.axis-row:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.axis-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.axis-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(232, 236, 245, 0.85);
+}
+
+.axis-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.82rem;
+  color: rgba(232, 236, 245, 0.8);
+}
+
+.axis-toggle input {
+  accent-color: rgba(232, 236, 245, 0.85);
+  width: 1rem;
+  height: 1rem;
+}
+
+.axis-inputs {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.axis-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  font-size: 0.78rem;
+  color: rgba(232, 236, 245, 0.7);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+.axis-inputs input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(232, 236, 245, 0.2);
+  background: rgba(10, 14, 24, 0.9);
+  color: rgba(232, 236, 245, 0.95);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.axis-inputs input:focus-visible {
+  border-color: rgba(232, 236, 245, 0.5);
+  box-shadow: 0 0 0 2px rgba(232, 236, 245, 0.18);
+  outline: none;
+}
+
+.axis-inputs input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.axis-controls-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.axis-reset,
+.axis-apply {
+  padding: 0.55rem 1.15rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(232, 236, 245, 0.35);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.axis-reset {
+  background: transparent;
+  color: rgba(232, 236, 245, 0.75);
+}
+
+.axis-reset:hover,
+.axis-reset:focus-visible {
+  border-color: rgba(232, 236, 245, 0.6);
+  color: rgba(232, 236, 245, 0.95);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.axis-apply {
+  background: linear-gradient(135deg, rgba(232, 236, 245, 0.85), rgba(232, 236, 245, 0.65));
+  color: rgba(10, 14, 24, 0.9);
+}
+
+.axis-apply:hover,
+.axis-apply:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(232, 236, 245, 0.9);
+  background: linear-gradient(135deg, rgba(232, 236, 245, 0.92), rgba(232, 236, 245, 0.78));
+  outline: none;
+}
+
+.axis-controls-error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #ff9f8f;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+.mobius-logo-link {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 4vw, 2.75rem);
+  z-index: 12;
+  opacity: 0.85;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.mobius-logo-link:hover,
+.mobius-logo-link:focus-visible {
+  opacity: 1;
+  transform: translateY(-1px);
+  outline: none;
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 2px rgba(237, 243, 255, 0.6),
+    0 0 0 4px rgba(2, 3, 9, 0.9);
+}
+
+.mobius-logo-image {
+  height: 3rem;
+  width: auto;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
 .chat-overlay-panel {
   position: absolute;
   top: clamp(1.25rem, 4vw, 2.5rem);
@@ -269,7 +555,7 @@ body,
   pointer-events: auto;
   backdrop-filter: blur(14px);
   box-shadow: 0 1.2rem 2.8rem rgba(2, 3, 9, 0.6);
-  overflow: auto;
+  overflow: visible;
   opacity: 0;
   transform: translateX(-0.4rem);
   animation: chat-overlay-slide 180ms ease forwards;
