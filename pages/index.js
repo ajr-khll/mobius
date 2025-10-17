@@ -1,72 +1,45 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
+
+import FunctionOverlay from '../components/FunctionOverlay';
+import PromptOverlay from '../components/PromptOverlay';
+import { createExplicitSurfaceDefinition } from '../lib/explicitSurfaces';
+import { createParametricCurveDefinition } from '../lib/parametricSurfaces';
+import { GRID_VALUES } from '../lib/grid';
+import { EXPLICIT_SURFACE_STYLES, MAX_EXPLICIT_SURFACES } from '../lib/surfaceStyles';
+import { createPlanarFunctionDefinition } from '../lib/planarFunctions';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
-const GRID_SIZE = 32;
-const GRID_MIN = -Math.PI;
-const GRID_MAX = Math.PI;
-
-const generateGrid = (size, min, max) => {
-  const step = (max - min) / (size - 1);
-  return Array.from({ length: size }, (_, index) => min + index * step);
-};
-
-const GRID_VALUES = generateGrid(GRID_SIZE, GRID_MIN, GRID_MAX);
-
-const surfaceDefinitions = [
-  {
-    id: 'function-a',
-    symbol: 'f1',
-    label: 'f1(x, y) = sin(x) * cos(y)',
-    accent: '#6f9ce5',
-    opacity: 0.95,
-    colorscale: [
-      [0, '#081020'],
-      [0.35, '#0f1f42'],
-      [0.7, '#1b3f89'],
-      [1, '#6f9ce5'],
-    ],
-    evaluator: (x, y) => Math.sin(x) * Math.cos(y),
-  },
-  {
-    id: 'function-b',
-    symbol: 'f2',
-    label: 'f2(x, y) = 0.25 * x^2 - 0.5 * y^2',
-    accent: '#f5a97f',
-    opacity: 0.68,
-    colorscale: [
-      [0, '#140b0f'],
-      [0.4, '#2f1624'],
-      [0.7, '#6d2a3f'],
-      [1, '#f5a97f'],
-    ],
-    evaluator: (x, y) => 0.25 * x * x - 0.5 * y * y,
-  },
+const INITIAL_PARAMETRIC_FUNCTIONS = [
+  createParametricCurveDefinition({
+    id: 'parametric-p1',
+    symbol: 'p1',
+    xExpression: 'sin(t)',
+    yExpression: 'cos(2 * t)',
+    parameterRange: {
+      start: -2 * Math.PI,
+      end: 2 * Math.PI,
+      steps: 250,
+    },
+    accent: '#F5E663',
+  }),
 ];
 
-const functionDefinitions = surfaceDefinitions.map((definition) => {
-  const z = GRID_VALUES.map((y) =>
-    GRID_VALUES.map((x) => Number(definition.evaluator(x, y).toFixed(4)))
-  );
-
-  return {
-    id: definition.id,
-    symbol: definition.symbol,
-    label: definition.label,
-    accent: definition.accent,
-    plot: {
-      type: 'surface',
-      x: GRID_VALUES,
-      y: GRID_VALUES,
-      z,
-      opacity: definition.opacity,
-      colorscale: definition.colorscale,
-      showscale: false,
+const INITIAL_PLANAR_FUNCTIONS = [
+  createPlanarFunctionDefinition({
+    id: 'planar-g1',
+    symbol: 'g1',
+    expression: 'x^2',
+    domain: {
+      start: -4,
+      end: 4,
     },
-  };
-});
+    samples: 220,
+    accent: '#C77DFF',
+  }),
+];
 
 const axisFont = {
   family: 'JetBrains Mono, monospace',
@@ -111,12 +84,83 @@ const layout = {
 
 export default function FullscreenPlot() {
   const [expandedFunctions, setExpandedFunctions] = useState({});
+  const [surfaceSlots, setSurfaceSlots] = useState(
+    () => Array(MAX_EXPLICIT_SURFACES).fill(null)
+  );
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
+  const [promptValue, setPromptValue] = useState('');
+  const [promptError, setPromptError] = useState(null);
+  const nextReplacementIndexRef = useRef(0);
+  const parametricFunctionsRef = useRef(INITIAL_PARAMETRIC_FUNCTIONS);
+  const planarFunctionsRef = useRef(INITIAL_PLANAR_FUNCTIONS);
 
-  const toggleFunction = (id) => {
+  const parametricFunctions = parametricFunctionsRef.current;
+  const planarFunctions = planarFunctionsRef.current;
+  const explicitFunctions = surfaceSlots.filter(Boolean);
+  const activeFunctions = [...parametricFunctions, ...planarFunctions, ...explicitFunctions];
+
+  const toggleFunction = (symbol) => {
     setExpandedFunctions((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [symbol]: !prev[symbol],
     }));
+  };
+
+  const handlePromptToggle = () => {
+    setIsPromptOpen((prev) => !prev);
+    setPromptError(null);
+  };
+
+  const handlePromptSubmit = (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setPromptError('Enter an explicit function of x and y to visualize.');
+      return;
+    }
+
+    try {
+      setSurfaceSlots((previous) => {
+        const updated = [...previous];
+        let targetIndex = previous.findIndex((slot) => slot === null);
+
+        if (targetIndex === -1) {
+          targetIndex = nextReplacementIndexRef.current;
+        }
+
+        const style = EXPLICIT_SURFACE_STYLES[targetIndex];
+        const surfaceDefinition = createExplicitSurfaceDefinition({
+          id: `explicit-${style.symbol}`,
+          symbol: style.symbol,
+          expression: trimmed,
+          gridValues: GRID_VALUES,
+          accent: style.accent,
+          opacity: style.opacity,
+          colorscale: style.colorscale,
+        });
+
+        nextReplacementIndexRef.current = (targetIndex + 1) % MAX_EXPLICIT_SURFACES;
+
+        updated[targetIndex] = {
+          ...surfaceDefinition,
+          styleIndex: targetIndex,
+        };
+
+        return updated;
+      });
+
+      setPromptValue('');
+      setPromptError(null);
+    } catch (error) {
+      console.error('Failed to create explicit surface from prompt:', error);
+      setPromptError(
+        error?.message || 'Unable to visualize that expression. Please try again.'
+      );
+    }
+  };
+
+  const handlePromptClear = () => {
+    setPromptValue('');
+    setPromptError(null);
   };
 
   return (
@@ -127,47 +171,27 @@ export default function FullscreenPlot() {
       </Head>
       <div className="fullscreen-plot">
         <Plot
-          data={functionDefinitions.map(({ plot }) => plot)}
+          data={activeFunctions.map(({ plot }) => plot)}
           layout={layout}
           config={{ displayModeBar: false, responsive: true }}
           style={{ width: '100%', height: '100%' }}
           useResizeHandler
         />
-        <aside className="function-overlay" aria-label="Active function descriptions">
-          {functionDefinitions.map(({ id, symbol, label, accent }) => {
-            const isExpanded = Boolean(expandedFunctions[id]);
-            const labelId = `${id}-label`;
-
-            return (
-              <div
-                key={id}
-                className={`function-chip${isExpanded ? ' is-expanded' : ''}`}
-                style={{ '--accent-color': accent }}
-              >
-                {isExpanded && (
-                  <div
-                    id={labelId}
-                    className="function-label"
-                    role="status"
-                  >
-                    {label}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className="function-circle"
-                  aria-expanded={isExpanded}
-                  aria-controls={isExpanded ? labelId : undefined}
-                  aria-label={`${isExpanded ? 'Hide' : 'Show'} description for ${symbol}`}
-                  title={`${isExpanded ? 'Hide' : 'Show'} ${label}`}
-                  onClick={() => toggleFunction(id)}
-                >
-                  {symbol}
-                </button>
-              </div>
-            );
-          })}
-        </aside>
+        <FunctionOverlay
+          functions={activeFunctions}
+          expanded={expandedFunctions}
+          onToggle={toggleFunction}
+        />
+        <PromptOverlay
+          isOpen={isPromptOpen}
+          onToggle={handlePromptToggle}
+          promptValue={promptValue}
+          onPromptChange={setPromptValue}
+          onSubmit={handlePromptSubmit}
+          onClear={handlePromptClear}
+          functions={activeFunctions}
+          error={promptError}
+        />
       </div>
     </>
   );
