@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from agents import Runner
 
-from .agent import (
+from agent import (
     plot_explicit_function,
     plot_parametric_function,
     plot_planar_function,
