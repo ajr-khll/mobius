@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   useCallback,
   useEffect,
@@ -119,7 +120,8 @@ const mobiusLabelStyle = {
   letterSpacing: '0.18em',
   color: 'rgba(231, 236, 245, 0.82)',
   zIndex: 11,
-  pointerEvents: 'none',
+  pointerEvents: 'auto',
+  cursor: 'pointer',
   userSelect: 'none',
   textAlign: 'center',
 };
@@ -361,7 +363,13 @@ const typesetMath = (element) => {
 
   return (
     <>
-      <div style={mobiusLabelStyle}>mobius</div>
+      <Link
+        href="/apple"
+        style={mobiusLabelStyle}
+        aria-label="Open the Mobius landing page"
+      >
+        mobius
+      </Link>
       <button
         type="button"
         className={`chat-circle${isOpen ? ' is-open' : ''}`}

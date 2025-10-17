@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(180deg, #050509, #020203);
+  color: #f5f7fa;
+  min-height: 100%;
+}
+
+body,
+#__next {
+  display: flex;
+  flex: 1;
+}
+
+body.apple-experience {
+  background: #050509;
+  color: #f5f7fa;
+  color-scheme: dark;
+}

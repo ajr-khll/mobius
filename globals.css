@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
 
 :root {
   color-scheme: dark;
@@ -10,6 +10,24 @@
   --text-primary: #edf3ff;
   --text-secondary: #93a5cc;
   --text-muted: #576683;
+  --apple-page-bg: #050509;
+  --apple-page-accent: #e8540e;
+  --apple-page-blue: #0d5ba3;
+  --apple-page-cyan: #28a1bb;
+  --apple-page-text: rgba(255, 255, 255, 0.88);
+  --apple-page-muted: rgba(255, 255, 255, 0.64);
+}
+
+body.apple-experience {
+  background: var(--apple-page-bg);
+  color: var(--apple-page-text);
+  display: block;
+  color-scheme: dark;
+}
+
+body.apple-experience #__next {
+  display: block;
+  min-height: 100vh;
 }
 
 *,
