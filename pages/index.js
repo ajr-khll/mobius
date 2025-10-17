@@ -15,7 +15,7 @@ import coloredLogo from '../assets/mobius_logo@2x.png';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+  process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const PARAMETRIC_STYLE_SEQUENCE = ['#F5E663', '#9EDDEB', '#FF9CEE'];
 

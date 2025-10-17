@@ -24,7 +24,7 @@ if allowed_origins_env:
 else:
     allowed_origins = [
         "http://localhost:3000",
-        "https://mobius-pearl.vercel.app/"
+        "https://mobius-pearl.vercel.app"
     ]
 
 app.add_middleware(
