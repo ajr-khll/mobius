@@ -5,5 +5,4 @@ uvicorn
 pydantic
 requests
 openai-agents
-collections
 
