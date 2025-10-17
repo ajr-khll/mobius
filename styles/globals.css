@@ -199,6 +199,98 @@ body,
   box-shadow: inset 0 0 0 1px rgba(27, 63, 137, 0.12);
 }
 
+.function-overlay {
+  position: absolute;
+  top: clamp(1.25rem, 4vw, 2.5rem);
+  right: clamp(1.25rem, 4vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.function-chip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.function-circle {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(110, 156, 229, 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(2, 3, 9, 0.92),
+    rgba(6, 12, 24, 0.82)
+  );
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  box-shadow: 0 0.65rem 1.6rem rgba(2, 3, 9, 0.65);
+}
+
+.function-circle:hover,
+.function-circle:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--accent-color, #6f9ce5);
+  background: linear-gradient(
+    135deg,
+    rgba(6, 12, 24, 0.92),
+    rgba(11, 18, 34, 0.87)
+  );
+}
+
+.function-circle:focus-visible {
+  outline: 2px solid var(--accent-color, #6f9ce5);
+  outline-offset: 2px;
+}
+
+.function-label {
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.85rem;
+  background: rgba(2, 3, 9, 0.84);
+  border: 1px solid rgba(111, 156, 229, 0.45);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 0.75rem 2.1rem rgba(2, 3, 9, 0.65);
+  animation: function-label-fade 160ms ease forwards;
+}
+
+.function-chip.is-expanded .function-circle {
+  border-color: var(--accent-color, #6f9ce5);
+}
+
+.function-chip.is-expanded .function-label {
+  border-color: var(--accent-color, #6f9ce5);
+  box-shadow: 0 0.6rem 1.8rem rgba(5, 10, 20, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+@keyframes function-label-fade {
+  from {
+    opacity: 0;
+    transform: translateX(0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .graph-placeholder > div {
   flex: 1;
   min-width: 0;
