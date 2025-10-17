@@ -1,14 +1,14 @@
 ## Project Title: Mobius: AI-Powered 3D Mathematical Visualization
-**Team Members:** Akshay Vadlamani, AJ Khullar, Anika Mantripragada
+**Team Members:** Akshay Vadlamani, AJ (Arjun) Khullar, Anika Mantripragada
 ## Summary
 
 **The Problem:**
 
-Many students rely on ChatGPT to assist them through challenging mathematics courses by providing step-by-step solutions. However, ChatGPT falls short in its inability to help students visualize the necessary functions that aid in comprehension of said problems. Existing tools like Desmos and Wolfram Alpha only offer 2D visualizations, making it difficult for students to understand multivariable calculus, vector fields, and parametric surfaces.
+Many students rely on LLMs to assist them through challenging mathematics courses by providing step-by-step solutions. However, LLMs fall short in their inability to help students visualize the necessary functions that aid in comprehension of said problems. Existing tools like Desmos and Wolfram Alpha only offer 2D visualizations with cumbersome input formats, making it difficult for students to understand multivariable calculus, vector fields, and parametric surfaces.
 
 **The Solution:**
 
-Mobius revolutionizes how students approach mathematics by providing Large Language Models with a framework that supports ChatGPT's existing solutions with interactive 3D visual aids. This allows students to break through the layers of abstraction that can make high-level calculus feel so overwhelming, ensuring a deeper understanding rooted in geometry.
+Mobius revolutionizes how students approach mathematics by providing Large Language Models with a framework that supports LLMs' existing solutions with interactive 3D visual aids. This allows students to break through the layers of abstraction that can make high-level calculus feel so overwhelming, ensuring a deeper understanding rooted in geometry.
 Students can ask Mobius to visualize any 3D function, parametric equation, or surface in real-time while working through problems. The AI renders the geometry instantly, allowing users to rotate, modify parameters, and explore the mathematical concepts visually.
 
 ## How AI is Used:
