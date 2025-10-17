@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
@@ -56,7 +56,7 @@ const layout = {
       title: { text: 'Z', font: axisFont },
       tickfont: axisFont,
     },
-    camera: { eye: { x: 1.6, y: 1.6, z: 1.1 } },
+
   },
 };
 
@@ -65,6 +65,8 @@ const createDefaultAxisConfig = () => ({
   y: { mode: 'auto', min: -10, max: 10 },
   z: { mode: 'auto', min: -10, max: 10 },
 });
+
+import { chooseCamera, animateCamera } from '../lib/camera';
 
 export default function FullscreenPlot() {
   const [expandedFunctions, setExpandedFunctions] = useState({});
@@ -83,6 +85,27 @@ export default function FullscreenPlot() {
   const clearButtonRef = useRef(null);
   const explicitFunctions = surfaceSlots.filter(Boolean);
   const activeFunctions = [...parametricFunctions, ...explicitFunctions];
+  const plotRef = useRef(null);
+  const cameraAzimuthRef = useRef(0);
+
+  useEffect(() => {
+    const gd = plotRef.current?.el;
+    if (!gd) return;
+
+    if (activeFunctions.length === 0) {
+      animateCamera(gd, { eye: { x: 1.6, y: 1.6, z: 1.1 } });
+      cameraAzimuthRef.current = 0;
+      return;
+    }
+
+    const { camera: newCamera, azimuth } = chooseCamera(
+      activeFunctions,
+      GRID_VALUES,
+      cameraAzimuthRef.current
+    );
+    cameraAzimuthRef.current = azimuth;
+    animateCamera(gd, newCamera);
+  }, [activeFunctions]);
 
   const addExplicitSurfaceFromExpression = useCallback(
     (expression) => {
@@ -371,11 +394,14 @@ export default function FullscreenPlot() {
           />
         </Link>
         <Plot
+          ref={plotRef}
           data={activeFunctions.map(({ plot }) => plot)}
           layout={computedLayout}
           config={{ displayModeBar: false, responsive: true }}
           style={{ width: '100%', height: '100%' }}
           useResizeHandler
+          onInitialized={(figure, graphDiv) => { plotRef.current = graphDiv; }}
+          onUpdate={(figure, graphDiv) => { plotRef.current = graphDiv; }}
         />
         <FunctionOverlay
           functions={activeFunctions}

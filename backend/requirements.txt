@@ -1,0 +1,9 @@
+openai
+dotenv
+fastapi
+uvicorn
+pydantic
+requests
+openai-agents
+collections
+
