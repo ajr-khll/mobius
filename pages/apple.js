@@ -73,7 +73,7 @@ export default function AppleInspiredPage() {
             </p>
             <div className="mt-16 flex justify-center text-sm tracking-[0.24em]">
               <Link
-                href="/"
+                href="/app"
                 className="inline-flex min-w-[160px] justify-center rounded-full border border-brand-orange px-8 py-3 font-display text-brand-orange transition-all duration-200 ease-apple hover:scale-[1.03] hover:bg-brand-orange hover:text-brand-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/60 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-black"
               >
                 open app

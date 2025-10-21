@@ -7,6 +7,11 @@ from typing import Any, Dict, List
 from agents import Agent, Runner, function_tool, SQLiteSession
 from dotenv import load_dotenv
 
+def start_session():
+    session_id = str(uuid.uuid4())
+    return session_id
+
+
 @function_tool
 def plot_explicit_function(
     expression: str,
@@ -88,7 +93,7 @@ agent = Agent(name="Math Assistant",
               """,
               tools=[plot_explicit_function, plot_parametric_function, plot_planar_function])
 
-session = SQLiteSession("conversation_123")
+session = SQLiteSession(session_id=start_session())
 
 
 def main():

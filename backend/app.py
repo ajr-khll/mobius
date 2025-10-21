@@ -1,5 +1,6 @@
 import os
 from typing import List, Optional
+import uuid
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -24,12 +25,19 @@ if allowed_origins_env:
 else:
     allowed_origins = [
         "http://localhost:3000",
-        "https://mobius-pearl.vercel.app"
+        "https://mobius-pearl.vercel.app",
     ]
+
+allowed_origin_regex_env = os.getenv("BACKEND_ALLOWED_ORIGIN_REGEX")
+if allowed_origin_regex_env is not None:
+    allowed_origin_regex = allowed_origin_regex_env.strip() or None
+else:
+    allowed_origin_regex = r"https://.*\.vercel\.app"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=allowed_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
