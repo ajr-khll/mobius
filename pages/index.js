@@ -1,7 +1,7 @@
 export async function getServerSideProps() {
   return {
     redirect: {
-      destination: '/apple',
+      destination: '/home',
       permanent: false,
     },
   };

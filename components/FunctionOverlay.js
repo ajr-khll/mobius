@@ -28,6 +28,13 @@ const getFunctionLabelLatex = (fn) => {
     return '';
   }
 
+  if (fn.inequality) {
+    const { operator, expression } = fn.inequality;
+    const latexOperator = operator === '>=' ? '\\\\geq' : '>';
+    const suffix = operator === '>' ? '\\\\;\\\\text{(strict)}' : '';
+    return `\\\\(z ${latexOperator} ${escapeHtml(expression)}${suffix}\\\\)`;
+  }
+
   if (fn.expression) {
     return `\\(${escapeHtml(fn.symbol)}(x,\\, y) = ${escapeHtml(fn.expression)}\\)`;
   }
@@ -82,6 +89,10 @@ export default function FunctionOverlay({ functions, expanded, onToggle }) {
         const isExpanded = Boolean(expanded[symbol]);
         const labelId = `${symbol}-label`;
         const latexLabel = getFunctionLabelLatex(fn);
+        const operatorSuffix = fn.inequality
+          ? (fn.inequality.operator === '>=' ? '>=' : '>')
+          : '';
+        const circleLabel = operatorSuffix ? `${symbol}${operatorSuffix}` : symbol;
 
         return (
           <div
@@ -111,7 +122,7 @@ export default function FunctionOverlay({ functions, expanded, onToggle }) {
               title={`${isExpanded ? 'Hide' : 'Show'} ${label || symbol}`}
               onClick={() => onToggle?.(symbol)}
             >
-              {symbol}
+              {circleLabel}
             </button>
           </div>
         );

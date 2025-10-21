@@ -32,7 +32,8 @@ Mobius integrates AI in the following ways:
 2. Real-time parameter modification and exploration
 
 3. Full ChatGPT math assistant with visual enhancement
-4. Interactive rotation and manipulation
+4. Render semi-transparent 3D inequality regions (e.g. visualize where z >= f(x, y)) with strict vs inclusive boundary styling
+5. Interactive rotation and manipulation
 
 
 **Use Cases:**
@@ -42,8 +43,6 @@ Mobius integrates AI in the following ways:
 **Professors:** Create interactive lectures with instant 3D demonstrations
 
 **Researchers:** Rapidly prototype complex models through conversation
-
-
 
 
 

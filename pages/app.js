@@ -12,12 +12,39 @@ import { createParametricCurveDefinition } from '../lib/parametricSurfaces';
 import { GRID_VALUES } from '../lib/grid';
 import { EXPLICIT_SURFACE_STYLES, MAX_EXPLICIT_SURFACES } from '../lib/surfaceStyles';
 import { chooseCamera, animateCamera } from '../lib/camera';
+import { createInequalityRegionDefinition } from '../lib/inequalityRegions';
 import coloredLogo from '../assets/mobius_logo@2x.png';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+const resolveBackendBaseUrl = () => {
+  const envValue = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (envValue) {
+    return envValue.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname, port } = window.location;
+    const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const fallbackPort = isLocalHost ? '8000' : port;
+    const portSegment = fallbackPort ? `:${fallbackPort}` : '';
+    return `${protocol}//${hostname}${portSegment}`;
+  }
+
+  return '';
+};
+
+const buildBackendUrl = (path = '') => {
+  const baseUrl = resolveBackendBaseUrl();
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  if (!baseUrl) {
+    return normalizedPath;
+  }
+  return `${baseUrl}${normalizedPath}`;
+};
 
 const PARAMETRIC_STYLE_SEQUENCE = ['#F5E663', '#9EDDEB', '#FF9CEE'];
+const INEQUALITY_STYLE_SEQUENCE = ['#67C5FF', '#F2A93B', '#EA6F8F', '#7BE495'];
 
 const axisFont = {
   family: 'JetBrains Mono, monospace',
@@ -79,9 +106,15 @@ export default function FullscreenPlot() {
   const nextReplacementIndexRef = useRef(0);
   const [parametricFunctions, setParametricFunctions] = useState([]);
   const parametricCounterRef = useRef(0);
+  const [inequalityRegions, setInequalityRegions] = useState([]);
+  const inequalityCounterRef = useRef(0);
   const clearButtonRef = useRef(null);
   const explicitFunctions = surfaceSlots.filter(Boolean);
-  const activeFunctions = [...parametricFunctions, ...explicitFunctions];
+  const activeFunctions = [
+    ...parametricFunctions,
+    ...explicitFunctions,
+    ...inequalityRegions,
+  ];
   const plotRef = useRef(null);
   const cameraAzimuthRef = useRef(0);
 
@@ -216,6 +249,43 @@ export default function FullscreenPlot() {
     [addExplicitSurfaceFromExpression]
   );
 
+  const addInequalityRegionFromPayload = useCallback(
+    (payload) => {
+      if (!payload) {
+        return;
+      }
+
+      const { expression, operator, x_range, y_range, z_range } = payload;
+      if (!expression) {
+        return;
+      }
+
+      const currentIndex = inequalityCounterRef.current;
+      const symbol = `r${currentIndex + 1}`;
+      const colorIndex = currentIndex % INEQUALITY_STYLE_SEQUENCE.length;
+      const accent = INEQUALITY_STYLE_SEQUENCE[colorIndex];
+
+      try {
+        const definition = createInequalityRegionDefinition({
+          id: `inequality-${symbol}-${Date.now().toString(36)}`,
+          symbol,
+          expression,
+          operator,
+          accent,
+          xRange: x_range,
+          yRange: y_range,
+          zRange: z_range,
+        });
+
+        inequalityCounterRef.current = currentIndex + 1;
+        setInequalityRegions((previous) => [...previous, definition]);
+      } catch (error) {
+        console.error('Failed to create inequality region:', error);
+      }
+    },
+    []
+  );
+
   const handleToolEvents = useCallback(
     (events) => {
       if (!Array.isArray(events) || events.length === 0) {
@@ -239,12 +309,20 @@ export default function FullscreenPlot() {
           case 'plot_planar_function':
             addPlanarSurfaceFromPayload(payload);
             break;
+          case 'plot_inequality_region':
+            addInequalityRegionFromPayload(payload);
+            break;
           default:
             break;
         }
       });
     },
-    [addExplicitSurfaceFromExpression, addParametricCurveFromPayload, addPlanarSurfaceFromPayload]
+    [
+      addExplicitSurfaceFromExpression,
+      addParametricCurveFromPayload,
+      addPlanarSurfaceFromPayload,
+      addInequalityRegionFromPayload,
+    ]
   );
 
   const toggleFunction = (symbol) => {
@@ -271,7 +349,13 @@ export default function FullscreenPlot() {
     setLatestAgentMessage(null);
 
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/conversation/user-input`, {
+      if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+        console.warn(
+          'NEXT_PUBLIC_BACKEND_URL is not set; defaulting to inferred backend URL.'
+        );
+      }
+
+      const response = await fetch(buildBackendUrl('/conversation/user-input'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: trimmed }),
@@ -319,6 +403,8 @@ export default function FullscreenPlot() {
     setSurfaceSlots(Array(MAX_EXPLICIT_SURFACES).fill(null));
     setParametricFunctions([]);
     parametricCounterRef.current = 0;
+    setInequalityRegions([]);
+    inequalityCounterRef.current = 0;
     setExpandedFunctions({});
   }, []);
 
@@ -390,7 +476,16 @@ export default function FullscreenPlot() {
         </Link>
         <Plot
           ref={plotRef}
-          data={activeFunctions.map(({ plot }) => plot)}
+          data={activeFunctions.flatMap((definition) => {
+            const plots = [];
+            if (definition.plot) {
+              plots.push(definition.plot);
+            }
+            if (Array.isArray(definition.auxiliaryPlots)) {
+              plots.push(...definition.auxiliaryPlots);
+            }
+            return plots;
+          })}
           layout={computedLayout}
           config={{ displayModeBar: false, responsive: true }}
           style={{ width: '100%', height: '100%' }}
