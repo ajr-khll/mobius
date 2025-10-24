@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { Analytics } from "@vercel/analytics/next"
 
 import FunctionOverlay from '../components/FunctionOverlay';
 import PromptOverlay from '../components/PromptOverlay';
@@ -449,6 +450,7 @@ export default function FullscreenPlot() {
         <title>Mobius Viewport</title>
         <meta name="description" content="Full-screen Plotly surface preview." />
       </Head>
+      <Analytics />
       <div className="fullscreen-plot">
         <button
           type="button"
