@@ -1,4 +1,4 @@
-## Live Link To Try: https://mobius-pearl.vercel.app/
+## Live Link To Try: https://mobius.ink/
 
 ## Project Title: Mobius: AI-Powered 3D Mathematical Visualization
 **Team Members:** Akshay Vadlamani, AJ (Arjun) Khullar, Anika Mantripragada
