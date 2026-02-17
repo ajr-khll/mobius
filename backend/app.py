@@ -11,7 +11,7 @@ from agent import (
     plot_parametric_function,
     plot_planar_function,
     agent,
-    session,
+    get_session,
     consume_tool_events,
 )
 from fastapi.middleware.cors import CORSMiddleware
@@ -67,6 +67,7 @@ class PlanarFunctionRequest(BaseModel):
 
 class UserInputRequest(BaseModel):
     message: str
+    session_id: str
 
 
 latest_llm_text: Optional[str] = None
@@ -110,6 +111,8 @@ async def plot_planar_surface(payload: PlanarFunctionRequest):
 @app.post("/conversation/user-input")
 async def receive_user_input(payload: UserInputRequest):
     global latest_llm_text
+
+    session = get_session(payload.session_id)
 
     try:
         result = await Runner.run(

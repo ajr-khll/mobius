@@ -118,6 +118,11 @@ export default function FullscreenPlot() {
   ];
   const plotRef = useRef(null);
   const cameraAzimuthRef = useRef(0);
+  const sessionIdRef = useRef(null);
+
+  if (typeof crypto !== 'undefined' && !sessionIdRef.current) {
+    sessionIdRef.current = crypto.randomUUID();
+  }
 
   useEffect(() => {
     const gd = plotRef.current?.el;
@@ -359,7 +364,7 @@ export default function FullscreenPlot() {
       const response = await fetch(buildBackendUrl('/conversation/user-input'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, session_id: sessionIdRef.current }),
       });
 
       let data = null;

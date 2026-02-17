@@ -7,9 +7,10 @@ from typing import Any, Dict, List
 from agents import Agent, Runner, function_tool, SQLiteSession
 from dotenv import load_dotenv
 
-def start_session():
-    session_id = str(uuid.uuid4())
-    return session_id
+
+def get_session(session_id: str) -> SQLiteSession:
+    """Return a SQLiteSession for the given session_id."""
+    return SQLiteSession(session_id=session_id)
 
 
 @function_tool
@@ -158,10 +159,8 @@ agent = Agent(name="Math Assistant",
               """,
               tools=[plot_explicit_function, plot_parametric_function, plot_planar_function, plot_inequality_region])
 
-session = SQLiteSession(session_id=start_session())
-
-
 def main():
+    session = get_session(str(uuid.uuid4()))
     while True:
         user_input = input("User: ")
         result = Runner.run_sync(agent, input=user_input, session=session)
